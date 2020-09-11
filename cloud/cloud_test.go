@@ -34,6 +34,29 @@ func removeTestFile(name string) {
 	os.Remove("../test/" + name)
 }
 
+//
+func TestFakeCloud(t *testing.T) {
+	filename := "test-fake-file"
+	createTestFile(filename)
+	defer removeTestFile(filename)
+
+	conf.Init("../conf/config.ini")
+
+	// 打桩
+	cloudtype = func() string {
+		return "fakecloud"
+	}
+
+	cld, err := NewCloud(context.TODO(), "testbucket")
+	if err != nil {
+		t.Error(err)
+	}
+	err = cld.Upload(context.TODO(), "../test/" + filename)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 func TestMinio(t *testing.T) {
 	filename := "test-minio-file"
 	createTestFile(filename)

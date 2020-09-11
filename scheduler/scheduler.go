@@ -7,15 +7,27 @@
 package scheduler
 
 import (
+	"context"
 	"github.com/azd1997/dumper2cloud/dumper"
 	"github.com/azd1997/dumper2cloud/cloud"
 )
 
 // Scheduler 调度器
 type Scheduler struct {
-	dumper dumper.Dumper
-	store  cloud.Storage
+	Dumper dumper.Dumper
+	Cloud  cloud.Cloud
 
 }
 
-func NewScheduler(cfg )
+func NewScheduler(ctx context.Context) (*Scheduler, error) {
+	// 生成当前时间，加上
+
+	d, err := dumper.NewDumper(ctx)
+	if err != nil {
+		return nil, err
+	}
+	c, err := cloud.NewCloud(ctx, "")
+	if err != nil {
+		return nil, err
+	}
+}

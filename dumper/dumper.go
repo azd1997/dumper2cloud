@@ -16,7 +16,7 @@ import (
 
 // Dumper
 type Dumper interface {
-	Dump(ctx context.Context) error
+	Start(ctx context.Context) error
 }
 
 func NewDumper(ctx context.Context) (Dumper, error) {
@@ -24,7 +24,7 @@ func NewDumper(ctx context.Context) (Dumper, error) {
 
 	switch dumpertype {
 	case "gomydumper":
-		return gomydumper.NewGomydumper(ctx, bin, conf)
+		return gomydumper.NewGomydumper(ctx)
 	default:
 		return nil, errors.New("unknown dumpertype")
 	}

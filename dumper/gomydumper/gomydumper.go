@@ -9,22 +9,25 @@ package gomydumper
 import (
 	"context"
 	"fmt"
+	"github.com/azd1997/dumper2cloud/conf"
 	"os/exec"
 	"strings"
 )
 
 // NewGomydumper 新构建一个go-mydumper工具
-func NewGomydumper(bin string, conf string) (*Gomydumper, error) {
+func NewGomydumper(ctx context.Context) (*Gomydumper, error) {
 	// 检查bin有效性
 	// 检查bin作为路径时，对应的是不是文件，文件是不是可执行
 	// 如果bin没有"/"，使用exec.LoopPath尝试去PATH目录下找
+
+	binPath := conf.Global().Section("dumper2cloud").Key("dumper_bin_path").String()
+	cmd := exec.CommandContext(ctx, binPath, )
 
 	return &Gomydumper{bin:bin, conf:conf}, nil
 }
 
 type Gomydumper struct {
-	bin string
-	conf string
+	cmd *exec.Cmd
 }
 
 func (d *Gomydumper) Dump(ctx context.Context) error {

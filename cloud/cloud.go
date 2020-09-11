@@ -9,6 +9,7 @@ package cloud
 import (
 	"context"
 	"errors"
+	"github.com/azd1997/dumper2cloud/cloud/fakecloud"
 	"github.com/azd1997/dumper2cloud/cloud/minio"
 	"github.com/azd1997/dumper2cloud/conf"
 )
@@ -21,12 +22,17 @@ type Cloud interface {
 
 // NewCloud 返回新建的云存储客户端，并指定一个名称（类似于目录名，当前这次备份的所有文件都上传到该目录下）
 func NewCloud(ctx context.Context, cloudpath string) (Cloud, error) {
-	cloudtype := conf.Global().Section("dumper2cloud").Key("cloud").String()
-	switch cloudtype {
+	switch cloudtype() {
+	case "fakecloud":
+		return fakecloud.NewFakeCloud(ctx, cloudpath)
 	case "minio":
 		return minio.NewMinio(ctx, cloudpath)
 	default:
 		return nil, errors.New("unknown cloudtype")
 	}
+}
+
+var cloudtype = func () string {
+	return conf.Global().Section("dumper2cloud").Key("cloud").String()
 }
 
