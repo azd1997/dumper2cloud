@@ -22,16 +22,16 @@ func NewFakeDumper(ctx context.Context) (*FakeDumper, error) {
 	binPath := conf.Global().Section("dumper2cloud").Key("dumper_bin_path").String()
 	cmd := exec.CommandContext(ctx, binPath, "-o", conf.Global().Section("mysql").Key("outdir").String())
 
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &out
+	out := new(bytes.Buffer)
+	cmd.Stdout = out
+	cmd.Stderr = out
 
 	return &FakeDumper{cmd: cmd, out: out}, nil
 }
 
 type FakeDumper struct {
 	cmd *exec.Cmd
-	out bytes.Buffer
+	out *bytes.Buffer
 }
 
 func (d *FakeDumper) Start() error {
