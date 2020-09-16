@@ -186,7 +186,7 @@ func (s *Scheduler) walkOutdir() {
 		// 加入uploadQueue
 		s.uploadQueue <- &block{path: path}
 		// 加入detected
-		s.detected[path] = true
+		s.detected[info.Name()] = true
 
 		return nil
 	})

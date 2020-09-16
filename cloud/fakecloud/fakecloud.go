@@ -24,7 +24,8 @@ type FakeCloud struct {
 func (fc *FakeCloud) Upload(ctx context.Context, path string) error {
 	_, filename := filepath.Split(path)
 
-	// 模拟上传时模拟1MB/s的上传速度
+	// 测试时，模拟上传时模拟100MB/s的上传速度，不然等控制台输出要等很久
+	// 以后添加fakecloud的配置
 	info, err := os.Stat(path)
 	if err != nil {
 		return err
@@ -32,7 +33,8 @@ func (fc *FakeCloud) Upload(ctx context.Context, path string) error {
 	size := info.Size()
 	mb := size >> 20
 
-	time.Sleep(time.Duration(mb) * time.Second)
+	// 测试文件是10MB的话，等0.1s
+	time.Sleep(time.Duration(mb * 10) * time.Millisecond)
 	fc.uploaded[filename] = true
 	log.Printf("Successfully uploaded %s\n", path)
 	return nil
