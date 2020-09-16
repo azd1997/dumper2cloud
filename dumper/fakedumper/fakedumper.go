@@ -4,53 +4,78 @@
 * @Description: 针对fakedumper（一个假的备份工具），而实现的dumper封装
 ***********************************************************************/
 
-package main
+package fakedumper
 
 import (
+	"bytes"
 	"context"
+	"errors"
 	"fmt"
-	"github.com/azd1997/dumper2cloud/conf"
-	"os"
 	"os/exec"
-	"strconv"
-	"strings"
 	"syscall"
-	"time"
-)
 
+	"github.com/azd1997/dumper2cloud/conf"
+)
 
 // NewFakeDumper
 func NewFakeDumper(ctx context.Context) (*FakeDumper, error) {
 	binPath := conf.Global().Section("dumper2cloud").Key("dumper_bin_path").String()
 	cmd := exec.CommandContext(ctx, binPath)
 
-	return &FakeDumper{cmd:cmd}, nil
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &out
+
+	return &FakeDumper{cmd: cmd, out: out}, nil
 }
 
 type FakeDumper struct {
 	cmd *exec.Cmd
+	out bytes.Buffer
 }
 
 func (d *FakeDumper) Start() error {
+	if d.cmd == nil {
+		return errors.New("d.cmd is nil")
+	}
 	return d.cmd.Start()
 }
 
 func (d *FakeDumper) Pause() error {
-	d.cmd.Process.Signal(syscall.SIGHUP)
-	return d.cmd.Start()
+	if d.cmd == nil {
+		return errors.New("d.cmd is nil")
+	}
+	if d.cmd.Process == nil {
+		return errors.New("d.cmd is not started")
+	}
+	return d.cmd.Process.Signal(syscall.SIGSTOP)
 }
 
-func getPID(appName string) int {
-	cmd := exec.Command("ps", "-C", appName)
-	output, _ := cmd.Output()
+func (d *FakeDumper) Continue() error {
+	if d.cmd == nil {
+		return errors.New("d.cmd is nil")
+	}
+	if d.cmd.Process == nil {
+		return errors.New("d.cmd is not started")
+	}
+	return d.cmd.Process.Signal(syscall.SIGCONT)
+}
 
-	fields := strings.Fields(string(output))
-
-	for _, v := range fields {
-		if v == appName {
-			return true
-		}
+func (d *FakeDumper) Wait() error {
+	if d.cmd == nil {
+		return errors.New("d.cmd is nil")
+	}
+	if d.cmd.Process == nil {
+		return errors.New("d.cmd is not started")
 	}
 
-	return false
+	_, err := d.cmd.Process.Wait()
+	if err != nil {
+		return err
+	}
+
+	// 输出cmd的执行输出
+	fmt.Printf("d.cmd [%s] Stdout/Stderr: \n", d.cmd.String())
+	fmt.Println(d.out.String())
+	return nil
 }

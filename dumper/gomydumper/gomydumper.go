@@ -7,56 +7,74 @@
 package gomydumper
 
 import (
+	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"github.com/azd1997/dumper2cloud/conf"
 	"os/exec"
-	"strings"
+	"syscall"
 )
 
-// NewGomydumper 新构建一个go-mydumper工具
-func NewGomydumper(ctx context.Context) (*Gomydumper, error) {
-	// 检查bin有效性
-	// 检查bin作为路径时，对应的是不是文件，文件是不是可执行
-	// 如果bin没有"/"，使用exec.LoopPath尝试去PATH目录下找
-
+// NewGoMyDumper
+func NewGoMyDumper(ctx context.Context, confpath string) (*GoMyDumper, error) {
 	binPath := conf.Global().Section("dumper2cloud").Key("dumper_bin_path").String()
-	cmd := exec.CommandContext(ctx, binPath, )
+	cmd := exec.CommandContext(ctx, binPath, "-c", confpath)
 
-	return &Gomydumper{bin:bin, conf:conf}, nil
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &out
+
+	return &GoMyDumper{cmd:cmd, out:out}, nil
 }
 
-type Gomydumper struct {
+type GoMyDumper struct {
 	cmd *exec.Cmd
+	out bytes.Buffer
 }
 
-func (d *Gomydumper) Dump(ctx context.Context) error {
-	// 直接调用
-	cmd := exec.CommandContext(ctx, d.bin, )
-	out, err := cmd.CombinedOutput()
+func (d *GoMyDumper) Start() error {
+	if d.cmd == nil {
+		return errors.New("d.cmd is nil")
+	}
+	return d.cmd.Start()
+}
+
+func (d *GoMyDumper) Pause() error {
+	if d.cmd == nil {
+		return errors.New("d.cmd is nil")
+	}
+	if d.cmd.Process == nil {
+		return errors.New("d.cmd is not started")
+	}
+	return d.cmd.Process.Signal(syscall.SIGSTOP)
+}
+
+func (d *GoMyDumper) Continue() error {
+	if d.cmd == nil {
+		return errors.New("d.cmd is nil")
+	}
+	if d.cmd.Process == nil {
+		return errors.New("d.cmd is not started")
+	}
+	return d.cmd.Process.Signal(syscall.SIGCONT)
+}
+
+func (d *GoMyDumper) Wait() error {
+	if d.cmd == nil {
+		return errors.New("d.cmd is nil")
+	}
+	if d.cmd.Process == nil {
+		return errors.New("d.cmd is not started")
+	}
+
+	_, err := d.cmd.Process.Wait()
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(out))
 
-	cmd.Process.Wait()
-
-	// 查看bin进程ID
-	//
-}
-
-
-func getPID(appName string) int {
-	cmd := exec.Command("ps", "-C", appName)
-	output, _ := cmd.Output()
-
-	fields := strings.Fields(string(output))
-
-	for _, v := range fields {
-		if v == appName {
-			return true
-		}
-	}
-
-	return false
+	// 输出cmd的执行输出
+	fmt.Printf("d.cmd [%s] Stdout/Stderr: \n", d.cmd.String())
+	fmt.Println(d.out.String())
+	return nil
 }

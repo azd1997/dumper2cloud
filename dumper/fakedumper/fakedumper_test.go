@@ -4,4 +4,10 @@
 * @Description: The file is for
 ***********************************************************************/
 
-package main
+package fakedumper
+
+import "testing"
+
+func TestFakeDumper(t *testing.T) {
+
+}

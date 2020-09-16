@@ -7,24 +7,85 @@
 package mydumper
 
 import (
+	"bytes"
 	"context"
+	"errors"
+	"fmt"
+	"github.com/azd1997/dumper2cloud/conf"
 	"os/exec"
+	"syscall"
 )
 
-// NewMyDumper 新构建一个MyDumper工具
-func NewMyDumper(bin string, args ...string) (*MyDumper, error) {
-	// 检查bin有效性
-	// 检查bin作为路径时，对应的是不是文件，文件是不是可执行
-	// 如果bin没有"/"，使用exec.LoopPath尝试去PATH目录下找
+// NewMyDumper
+func NewMyDumper(ctx context.Context) (*MyDumper, error) {
+	binPath := conf.Global().Section("dumper2cloud").Key("dumper_bin_path").String()
 
-	return &MyDumper{bin:bin}, nil
+	// 根据confpath读配置
+	host := conf.Global().Section("mysql").Key("host").String()
+	port := conf.Global().Section("mysql").Key("port").String()
+	user := conf.Global().Section("mysql").Key("user").String()
+	password := conf.Global().Section("mysql").Key("password").String()
+	database := conf.Global().Section("mysql").Key("database").String()
+	outdir := conf.Global().Section("mysql").Key("outdir").String()
+	chunksizeMB := conf.Global().Section("mysql").Key("chunksize").String()
+
+	cmd := exec.CommandContext(ctx, binPath, "-h", host, "-P", port, "-u", user, "-p", password,
+		"-B", database, "-d", outdir, "-F", chunksizeMB)
+
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &out
+
+	return &MyDumper{cmd:cmd, out:out}, nil
 }
 
 type MyDumper struct {
-	bin string
+	cmd *exec.Cmd
+	out bytes.Buffer
 }
 
-func (d *MyDumper) Dump() {
-	cmd := exec.CommandContext(context.TODO(), d.bin, )
-	cmd.CombinedOutput()
+func (d *MyDumper) Start() error {
+	if d.cmd == nil {
+		return errors.New("d.cmd is nil")
+	}
+	return d.cmd.Start()
+}
+
+func (d *MyDumper) Pause() error {
+	if d.cmd == nil {
+		return errors.New("d.cmd is nil")
+	}
+	if d.cmd.Process == nil {
+		return errors.New("d.cmd is not started")
+	}
+	return d.cmd.Process.Signal(syscall.SIGSTOP)
+}
+
+func (d *MyDumper) Continue() error {
+	if d.cmd == nil {
+		return errors.New("d.cmd is nil")
+	}
+	if d.cmd.Process == nil {
+		return errors.New("d.cmd is not started")
+	}
+	return d.cmd.Process.Signal(syscall.SIGCONT)
+}
+
+func (d *MyDumper) Wait() error {
+	if d.cmd == nil {
+		return errors.New("d.cmd is nil")
+	}
+	if d.cmd.Process == nil {
+		return errors.New("d.cmd is not started")
+	}
+
+	_, err := d.cmd.Process.Wait()
+	if err != nil {
+		return err
+	}
+
+	// 输出cmd的执行输出
+	fmt.Printf("d.cmd [%s] Stdout/Stderr: \n", d.cmd.String())
+	fmt.Println(d.out.String())
+	return nil
 }

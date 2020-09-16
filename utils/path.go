@@ -5,3 +5,18 @@
 ***********************************************************************/
 
 package utils
+
+// 检查目录后缀是否有'/'，没有加上
+func CheckDirSuffixSlash(dir string) string {
+	n := len(dir)
+	if n == 0 {
+		return ""
+	}
+
+	if dir[n-1] != '/' {
+		return dir + "/"
+	}
+	return dir
+}
+
+// 打印目录下所有文件

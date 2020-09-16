@@ -46,5 +46,11 @@ Mydumper (https://github.com/maxbube/mydumper) 是一个 MySQL 全量备份工�
 
 关于控制mydumper备份进程，可以使用os包下对Process类提供Signal()方法实现
 
+## 9/16
 
+没有新思路，保持原方案
+
+## 9/16下午
+
+误删除了所有文件，恢复的时候只按照git恢复了之前的部分，数据丢失，重写
 

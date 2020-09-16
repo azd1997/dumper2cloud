@@ -29,8 +29,8 @@ func (fc *FakeCloud) Upload(ctx context.Context, path string) error {
 	if err != nil {
 		return err
 	}
-	size := info.Size() * 10	// 测试时文件大小模拟成10倍实际大小
-	mb := size / (1024 * 1024)
+	size := info.Size()
+	mb := size >> 20
 
 	time.Sleep(time.Duration(mb) * time.Second)
 	fc.uploaded[filename] = true
