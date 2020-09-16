@@ -25,7 +25,7 @@ func NewGoMyDumper(ctx context.Context, confpath string) (*GoMyDumper, error) {
 	cmd.Stdout = &out
 	cmd.Stderr = &out
 
-	return &GoMyDumper{cmd:cmd, out:out}, nil
+	return &GoMyDumper{cmd: cmd, out: out}, nil
 }
 
 type GoMyDumper struct {
@@ -74,7 +74,14 @@ func (d *GoMyDumper) Wait() error {
 	}
 
 	// 输出cmd的执行输出
+	fmt.Println()
 	fmt.Printf("d.cmd [%s] Stdout/Stderr: \n", d.cmd.String())
-	fmt.Println(d.out.String())
+	if d.out.Len() == 0 {
+		fmt.Println("everything seems ok.")
+	} else {
+		fmt.Println(d.out.String())
+	}
+	fmt.Println()
+
 	return nil
 }

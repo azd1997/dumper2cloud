@@ -16,8 +16,8 @@ import (
 
 // FakeCloud
 type FakeCloud struct {
-	bucket string
-	uploaded map[string]bool	// 文件已上传
+	bucket   string
+	uploaded map[string]bool // 文件已上传
 }
 
 // Upload 以二进制流格式（默认的ContentType）上传文件
@@ -48,4 +48,3 @@ func NewFakeCloud(ctx context.Context, cloudpath string) (*FakeCloud, error) {
 
 	return m, nil
 }
-

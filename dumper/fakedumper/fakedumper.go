@@ -20,7 +20,7 @@ import (
 // NewFakeDumper
 func NewFakeDumper(ctx context.Context) (*FakeDumper, error) {
 	binPath := conf.Global().Section("dumper2cloud").Key("dumper_bin_path").String()
-	cmd := exec.CommandContext(ctx, binPath)
+	cmd := exec.CommandContext(ctx, binPath, "-o", conf.Global().Section("mysql").Key("outdir").String())
 
 	var out bytes.Buffer
 	cmd.Stdout = &out
@@ -75,7 +75,14 @@ func (d *FakeDumper) Wait() error {
 	}
 
 	// 输出cmd的执行输出
+	fmt.Println()
 	fmt.Printf("d.cmd [%s] Stdout/Stderr: \n", d.cmd.String())
-	fmt.Println(d.out.String())
+	if d.out.Len() == 0 {
+		fmt.Println("everything seems ok.")
+	} else {
+		fmt.Println(d.out.String())
+	}
+	fmt.Println()
+
 	return nil
 }

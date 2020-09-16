@@ -24,7 +24,7 @@ func createTestFile(name string) {
 	defer file.Close()
 
 	data := "abcdefghijk\n"
-	for i:=0; i<100; i++ {
+	for i := 0; i < 100; i++ {
 		file.WriteString(data)
 	}
 }
@@ -51,7 +51,7 @@ func TestFakeCloud(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	err = cld.Upload(context.TODO(), "../test/" + filename)
+	err = cld.Upload(context.TODO(), "../test/"+filename)
 	if err != nil {
 		t.Error(err)
 	}
@@ -70,7 +70,7 @@ func TestMinio(t *testing.T) {
 			t.Error(err)
 		}
 	}
-	err = cld.Upload(context.TODO(), "../test/" + filename)
+	err = cld.Upload(context.TODO(), "../test/"+filename)
 	if err != nil {
 		t.Error(err)
 	}

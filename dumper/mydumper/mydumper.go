@@ -36,7 +36,7 @@ func NewMyDumper(ctx context.Context) (*MyDumper, error) {
 	cmd.Stdout = &out
 	cmd.Stderr = &out
 
-	return &MyDumper{cmd:cmd, out:out}, nil
+	return &MyDumper{cmd: cmd, out: out}, nil
 }
 
 type MyDumper struct {
@@ -85,7 +85,14 @@ func (d *MyDumper) Wait() error {
 	}
 
 	// 输出cmd的执行输出
+	fmt.Println()
 	fmt.Printf("d.cmd [%s] Stdout/Stderr: \n", d.cmd.String())
-	fmt.Println(d.out.String())
+	if d.out.Len() == 0 {
+		fmt.Println("everything seems ok.")
+	} else {
+		fmt.Println(d.out.String())
+	}
+	fmt.Println()
+
 	return nil
 }

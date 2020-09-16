@@ -75,7 +75,7 @@ func NewMinio(ctx context.Context, cloudpath string) (*Minio, error) {
 		// 检查bucket是否已存在
 		exists, errBucketExists := minioClient.BucketExists(ctx, m.bucket)
 		if errBucketExists == nil && exists {
-			return m, BucketExistsErr{bucket:m.bucket}
+			return m, BucketExistsErr{bucket: m.bucket}
 		} else {
 			return nil, err
 		}

@@ -32,7 +32,6 @@ func NewCloud(ctx context.Context, cloudpath string) (Cloud, error) {
 	}
 }
 
-var cloudtype = func () string {
+var cloudtype = func() string {
 	return conf.Global().Section("dumper2cloud").Key("cloud").String()
 }
-
